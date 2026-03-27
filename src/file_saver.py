@@ -1,6 +1,6 @@
 import json
 from abc import ABC, abstractmethod
-from aeroplane import Aeroplane
+from src.aeroplane import Aeroplane
 
 class AbstractFileSaver(ABC):
     """Абстрактный класс для работы с файлами"""
@@ -45,12 +45,15 @@ class JSONSaver(AbstractFileSaver):
 
     def get_aeroplanes(self, **filters) -> list:
         with open(self.filename, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+            data = json.load(f)  # Исправлено: загрузка данных из файла
+
         filtered = data
         if 'country' in filters:
             filtered = [p for p in filtered if p['country'] == filters['country']]
         if 'min_altitude' in filters:
             filtered = [p for p in filtered if p['altitude'] >= filters['min_altitude']]
+        if 'max_altitude' in filters:
+            filtered = [p for p in filtered if p['altitude'] <= filters['max_altitude']]
         return filtered
 
     def delete_aeroplane(self, aeroplane: Aeroplane) -> bool:

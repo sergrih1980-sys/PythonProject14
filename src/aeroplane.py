@@ -62,6 +62,7 @@ class Aeroplane:
     def __ge__(self, other) -> bool:
         return self.velocity >= other.velocity
 
+
     @classmethod
     def cast_to_object_list(cls, data: dict) -> list:
         aeroplanes = []
@@ -75,4 +76,3 @@ class Aeroplane:
             except (ValueError, IndexError, TypeError):
                 continue
         return aeroplanes
-
