@@ -1,127 +1,57 @@
 import json
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
+from typing import List,  Optional
 from src.aeroplane import Airplane
 
 class BaseStorageConnector(ABC):
-    """
-    Абстрактный класс, определяющий контракт для всех коннекторов к хранилищам данных.
-    Позволяет легко заменять хранилище (файлы, БД, облачные сервисы и т. д.).
-    """
+    """Абстрактный класс, определяющий контракт для всех коннекторов к хранилищам данных."""
 
     @abstractmethod
     def add_airplane(self, airplane: Airplane) -> bool:
-        """
-        Добавляет информацию о самолёте в хранилище.
-
-        Args:
-            airplane (Airplane): объект самолёта для сохранения
-
-        Returns:
-            bool: True при успешном добавлении, False при ошибке
-        """
         pass
 
     @abstractmethod
     def get_airplanes(self, **criteria) -> List[Airplane]:
-        """
-        Получает список самолётов по заданным критериям фильтрации.
-
-        Args:
-            **criteria: критерии фильтрации (например, country='Russia', min_speed=500)
-        Returns:
-            List[Airplane]: список подходящих самолётов
-        """
         pass
 
     @abstractmethod
     def remove_airplane(self, icao24: str) -> bool:
-        """
-        Удаляет самолёт из хранилища по его уникальному идентификатору ICAO24.
-
-        Args:
-            icao24 (str): уникальный идентификатор самолёта
-        Returns:
-            bool: True при успешном удалении, False если самолёт не найден или ошибка
-        """
         pass
 
     @abstractmethod
     def save_all(self) -> bool:
-        """
-        Сохраняет все данные в хранилище.
-        Может быть полезно для файловых хранилищ или кэширования.
-        Returns:
-            bool: статус операции сохранения
-        """
         pass
 
     @abstractmethod
     def load_all(self) -> bool:
-        """
-        Загружает все данные из хранилища.
-        Используется при инициализации или синхронизации.
-        Returns:
-            bool: статус операции загрузки
-        """
         pass
 
     @abstractmethod
     def update_airplane(self, icao24: str, **updates) -> bool:
-        """
-        Обновляет информацию о самолёте (заглушка для будущей интеграции с БД).
-
-        Args:
-            icao24 (str): идентификатор самолёта для обновления
-            **updates: поля и их новые значения
-        Returns:
-            bool: статус операции обновления
-        """
         pass
-
 
 class JSONFileConnector(BaseStorageConnector):
     """Конкретная реализация коннектора для работы с JSON‑файлами."""
 
     def __init__(self, filename: str = "airplanes.json"):
         self.filename = filename
-        self._data: List[Dict[str, Any]] = []
+        self._airplanes: List[Airplane] = []
         self.load_all()
 
-    def add_airplane(self, airplane: Airplane) -> bool:
-        """Добавляет информацию о самолёте в хранилище."""
-        self.airplanes.append(airplane)
-        return True
-
-
-    def save_all(self):
-        """Сохраняет все данные в JSON‑файл."""
-        with open(self.filename, 'w', encoding='utf-8') as f:
-            json.dump([ap.to_dict() for ap in self.airplanes], f, ensure_ascii=False, indent=2)
-
-
-    def load_all(self):
-        """Загружает данные из JSON‑файла."""
-        try:
-            with open(self.filename, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                self.airplanes = [Airplane(**item) for item in data]
-        except (FileNotFoundError, json.JSONDecodeError):
-            self.airplanes = []
-
-
     def _find_airplane_index(self, icao24: str) -> Optional[int]:
-        for i, plane_data in enumerate(self._data):
-            if plane_data.get('icao24') == icao24:
+        """Вспомогательный метод: находит индекс самолёта по ICAO24."""
+        for i, plane in enumerate(self._airplanes):
+            if plane.icao24 == icao24:
                 return i
         return None
 
     def add_airplane(self, airplane: Airplane) -> bool:
+        """Добавляет самолёт в хранилище, если его ещё нет."""
+        if self._find_airplane_index(airplane.icao24) is not None:
+            print(f"Самолёт с ICAO24 {airplane.icao24} уже существует")
+            return False
         try:
-            if self._find_airplane_index(airplane.icao24) is not None:
-                print(f"Самолёт с ICAO24 {airplane.icao24} уже существует")
-                return False
-            self._data.append(airplane.to_dict())
+            self._airplanes.append(airplane)
             return True
         except Exception as e:
             print(f"Ошибка при добавлении самолёта: {e}")
@@ -130,59 +60,64 @@ class JSONFileConnector(BaseStorageConnector):
     def get_airplanes(self, **criteria) -> List[Airplane]:
         """Получает самолёты по критериям фильтрации."""
         result = []
-
-        for plane_data in self._data:
+        for plane in self._airplanes:
             match = True
 
-            # Применяем все критерии фильтрации
+            # Применяем критерии фильтрации
             for key, value in criteria.items():
-                if key == 'min_speed' and plane_data.get('speed_kmh', 0) < value:
+                if key == 'country' and plane.origin_country != value:
                     match = False
-                elif key == 'max_speed' and plane_data.get('speed_kmh', float('inf')) > value:
+                elif key == 'min_speed' and plane.get_speed_kmh() < value:
                     match = False
-                elif key == 'country' and plane_data.get('origin_country', '') != value:
+                elif key == 'max_speed' and plane.get_speed_kmh() > value:
                     match = False
-                elif key == 'in_flight' and plane_data.get('is_in_flight', False) != value:
+                elif key == 'in_flight' and plane.is_in_flight() != value:
                     match = False
-                elif key == 'min_altitude' and plane_data.get('altitude', 0) < value:
+                elif key == 'min_altitude' and plane.altitude < value:
                     match = False
-                elif key == 'max_altitude' and plane_data.get('altitude', float('inf')) > value:
+                elif key == 'max_altitude' and plane.altitude > value:
                     match = False
 
             if match:
-                # Создаём объект Airplane из данных
-                try:
-                    airplane = Airplane(
-                        icao24=plane_data['icao24'],
-                        callsign=plane_data.get('callsign', 'N/A'),
-                        origin_country=plane_data.get('origin_country', 'Unknown'),
-                        velocity=plane_data.get('velocity', 0.0),
-                        altitude=plane_data.get('altitude', 0.0),
-                        latitude=plane_data.get('latitude', 0.0),
-                        longitude=plane_data.get('longitude', 0.0)
-                    )
-                    result.append(airplane)
-                except Exception as e:
-                    print(f"Ошибка создания объекта Airplane из данных {plane_data}: {e}")
-                    continue
-
+                result.append(plane)
         return result
 
-
     def remove_airplane(self, icao24: str) -> bool:
+        """Удаляет самолёт по ICAO24."""
         index = self._find_airplane_index(icao24)
         if index is not None:
-            removed_plane = self._data.pop(index)
-            print(f"Удален самолёт: {removed_plane['callsign']} (ICAO24: {icao24})")
+            removed_plane = self._airplanes.pop(index)
+            print(f"Удален самолёт: {removed_plane.callsign} (ICAO24: {icao24})")
             return True
         else:
             print(f"Самолёт с ICAO24 {icao24} не найден")
             return False
 
+    def update_airplane(self, icao24: str, **updates) -> bool:
+        """Обновляет поля самолёта по ICAO24."""
+        index = self._find_airplane_index(icao24)
+        if index is None:
+            print(f"Самолёт с ICAO24 {icao24} не найден для обновления")
+            return False
+
+        plane = self._airplanes[index]
+        try:
+            for field, value in updates.items():
+                if hasattr(plane, field):
+                    setattr(plane, field, value)
+                else:
+                    print(f"Поле {field} не существует в классе Airplane")
+                    return False
+            return self.save_all()
+        except Exception as e:
+            print(f"Ошибка обновления самолёта: {e}")
+            return False
+
     def save_all(self) -> bool:
+        """Сохраняет все данные в JSON‑файл."""
         try:
             with open(self.filename, 'w', encoding='utf-8') as f:
-                json.dump(self._data, f, indent=2, ensure_ascii=False)
+                json.dump([ap.to_dict() for ap in self._airplanes], f, ensure_ascii=False, indent=2)
             print(f"Данные сохранены в {self.filename}")
             return True
         except Exception as e:
@@ -190,26 +125,18 @@ class JSONFileConnector(BaseStorageConnector):
             return False
 
     def load_all(self) -> bool:
+        """Загружает данные из JSON‑файла."""
         try:
             with open(self.filename, 'r', encoding='utf-8') as f:
-                self._data = json.load(f)
+                data = json.load(f)
+                self._airplanes = [Airplane(**item) for item in data]
             print(f"Данные загружены из {self.filename}")
             return True
         except FileNotFoundError:
-            self._data = []
+            self._airplanes = []
             print(f"Файл {self.filename} не найден, создан новый")
             return True
         except Exception as e:
             print(f"Ошибка загрузки из файла: {e}")
-            self._data = []
+            self._airplanes = []
             return False
-
-    def update_airplane(self, icao24: str, **updates) -> bool:
-        print("Метод update_airplane пока не реализован для JSON‑хранилища")
-        index = self._find_airplane_index(icao24)
-        if index is not None:
-            for field, value in updates.items():
-                self._data[index][field] = value
-            return self.save_all()
-        return False
-

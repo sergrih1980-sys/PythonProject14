@@ -151,6 +151,14 @@ class BaseAPI(ABC):
 
     @abstractmethod
     def get_data(self, **kwargs):
+        pass
+
+    @abstractmethod
+    def is_valid_response(self, response):
+        pass
+
+    @abstractmethod
+    def get_data(self, **kwargs):
         """Абстрактный метод для получения данных из API."""
         pass
 
@@ -224,4 +232,29 @@ class BaseStorageConnector(ABC):
     @abstractmethod
     def add_airplane(self, airplane: Airplane) -> bool:
         """Добавляет информацию о самолёте в хранилище."""
+        pass
+
+    @abstractmethod
+    def get_airplanes(self) -> List[Airplane]:
+        """Возвращает список всех самолётов из хранилища."""
+        pass
+
+    @abstractmethod
+    def remove_airplane(self, icao24: str) -> bool:
+        """Удаляет самолёт по ICAO24 из хранилища."""
+        pass
+
+    @abstractmethod
+    def update_airplane(self, airplane: Airplane) -> bool:
+        """Обновляет информацию о самолёте в хранилище."""
+        pass
+
+    @abstractmethod
+    def save_all(self):
+        """Сохраняет все данные в хранилище."""
+        pass
+
+    @abstractmethod
+    def load_all(self):
+        """Загружает данные из хранилища."""
         pass
