@@ -88,6 +88,28 @@ class JSONFileConnector(BaseStorageConnector):
         self._data: List[Dict[str, Any]] = []
         self.load_all()
 
+    def add_airplane(self, airplane: Airplane) -> bool:
+        """Добавляет информацию о самолёте в хранилище."""
+        self.airplanes.append(airplane)
+        return True
+
+
+    def save_all(self):
+        """Сохраняет все данные в JSON‑файл."""
+        with open(self.filename, 'w', encoding='utf-8') as f:
+            json.dump([ap.to_dict() for ap in self.airplanes], f, ensure_ascii=False, indent=2)
+
+
+    def load_all(self):
+        """Загружает данные из JSON‑файла."""
+        try:
+            with open(self.filename, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                self.airplanes = [Airplane(**item) for item in data]
+        except (FileNotFoundError, json.JSONDecodeError):
+            self.airplanes = []
+
+
     def _find_airplane_index(self, icao24: str) -> Optional[int]:
         for i, plane_data in enumerate(self._data):
             if plane_data.get('icao24') == icao24:
