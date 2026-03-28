@@ -1,6 +1,6 @@
 import json
 from abc import ABC, abstractmethod
-from typing import List,  Optional
+from typing import List, Dict, Any, Optional
 from src.aeroplane import Airplane
 
 class BaseStorageConnector(ABC):
@@ -13,19 +13,15 @@ class BaseStorageConnector(ABC):
     @abstractmethod
     def get_airplanes(self, **criteria) -> List[Airplane]:
         pass
-
     @abstractmethod
     def remove_airplane(self, icao24: str) -> bool:
         pass
-
     @abstractmethod
     def save_all(self) -> bool:
         pass
-
     @abstractmethod
     def load_all(self) -> bool:
         pass
-
     @abstractmethod
     def update_airplane(self, icao24: str, **updates) -> bool:
         pass
@@ -62,8 +58,6 @@ class JSONFileConnector(BaseStorageConnector):
         result = []
         for plane in self._airplanes:
             match = True
-
-            # Применяем критерии фильтрации
             for key, value in criteria.items():
                 if key == 'country' and plane.origin_country != value:
                     match = False
@@ -77,7 +71,6 @@ class JSONFileConnector(BaseStorageConnector):
                     match = False
                 elif key == 'max_altitude' and plane.altitude > value:
                     match = False
-
             if match:
                 result.append(plane)
         return result
