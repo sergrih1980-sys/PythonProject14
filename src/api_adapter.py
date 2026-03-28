@@ -1,79 +1,74 @@
 from abc import ABC, abstractmethod
 import requests
 
-class AbstractAPIAdapter(ABC):
-    """Абстрактный класс для работы с API"""
+class BaseAPI(ABC):
+    """Абстрактный класс для работы с различными API."""
 
     @abstractmethod
-    def get_country_coordinates(self, country: str) -> list:
-        """Получить координаты (bounding box) для указанной страны.
-
-        Args:
-            country (str): Название страны.
-
-        Returns:
-            list: Список из 4 чисел [lat_min, lat_max, lon_min, lon_max] или пустой список при ошибке.
-        """
+    def get_data(self, **kwargs):
+        """Абстрактный метод для получения данных из API."""
         pass
 
     @abstractmethod
-    def get_aeroplanes_by_coordinates(self, coordinates: list) -> dict:
-        """Получить данные о самолётах в указанном географическом прямоугольнике.
-
-        Args:
-            coordinates (list): Список из 4 координат [lat_min, lat_max, lon_min, lon_max].
-
-        Returns:
-            dict: Сырые данные от API (обычно JSON).
-        """
+    def is_valid_response(self, response):
+        """Абстрактный метод для проверки валидности ответа от API."""
         pass
 
-class APIAdapter(AbstractAPIAdapter):
-    def __init__(self) -> None:
-        self.openstreetmap_url = 'https://nominatim.openstreetmap.org/search'
-        self.opensky_url = 'https://opensky-network.org/api/states/all'
 
-    def get_country_coordinates(self, country: str) -> list:
-        headers = {'User-Agent': 'test-app/1.0'}
+class NominatimAPI(BaseAPI):
+    """Класс для работы с Nominatim OpenStreetMap API."""
+
+    def __init__(self):
+        self.base_url = "https://nominatim.openstreetmap.org/search"
+
+    def get_data(self, country_name):
         params = {
-            'country': country,
+            'q': country_name,
             'format': 'json',
-            'limit': 1,
+            'limit': 1
         }
-        try:
-            response = requests.get(url=self.openstreetmap_url, params=params, headers=headers)
-            response.raise_for_status()
-            data = response.json()
-            if data and 'boundingbox' in data[0]:
-                bbox = data[0]['boundingbox']
-                return [float(bbox[0]), float(bbox[1]), float(bbox[2]), float(bbox[3])]
-            else:
-                print(f"Координаты для страны '{country}' не найдены.")
-                return []
-        except requests.exceptions.RequestException as e:
-            print(f"Ошибка при запросе к OpenStreetMap: {e}")
-            return []
-        except (IndexError, KeyError, ValueError) as e:
-            print(f"Ошибка обработки данных OpenStreetMap: {e}")
-            return []
 
-    def get_aeroplanes_by_coordinates(self, coordinates: list) -> dict:
-        if not coordinates:
-            print("Координаты не предоставлены.")
-            return {}
-        params = {
-            'lamin': coordinates[0],
-            'lamax': coordinates[1],
-            'lomin': coordinates[2],
-            'lomax': coordinates[3],
-        }
         try:
-            response = requests.get(url=self.opensky_url, params=params)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            print(f"Ошибка при запросе к OpenSky Network: {e}")
-            return {}
-        except ValueError as e:
-            print(f"Ошибка парсинга JSON от OpenSky: {e}")
-            return {}
+            response = requests.get(self.base_url, params=params)
+            if self.is_valid_response(response):
+                data = response.json()
+                if data:
+                    return data[0]
+                else:
+                    raise ValueError(f"Страна '{country_name}' не найдена")
+            else:
+                raise ConnectionError(f"Ошибка API: {response.status_code}")
+        except requests.RequestException as e:
+            raise ConnectionError(f"Ошибка сети: {e}")
+
+    def is_valid_response(self, response):
+        return response.status_code == 200
+
+
+class OpenSkyAPI(BaseAPI):
+    """Класс для работы с OpenSky Network API."""
+
+    def __init__(self):
+        self.base_url = "https://opensky-network.org/api/states/all"
+
+    def get_data(self, boundingbox):
+        params = {
+            'lamin': boundingbox[0],  # юг
+            'lamax': boundingbox[1],  # север
+            'lomin': boundingbox[2],  # запад
+            'lomax': boundingbox[3]   # восток
+        }
+
+        try:
+            response = requests.get(self.base_url, params=params)
+            if self.is_valid_response(response):
+                data = response.json()
+                return data.get('states', [])
+            else:
+                raise ConnectionError(f"Ошибка API: {response.status_code}")
+        except requests.RequestException as e:
+            raise ConnectionError(f"Ошибка сети: {e}")
+
+    def is_valid_response(self, response):
+        return response.status_code == 200
+
