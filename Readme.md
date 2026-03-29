@@ -29,7 +29,7 @@
 - `to_dict()` — сериализует объект в словарь.
 
 **API‑классы**
-* `NominatimAPI` — работа с `OpenStreetMap Nominatim` для поиска географических данных.
+* `NominatimAPI` — работа с `OpenStreetMap Nominatim`  для поиска географических данных.
 
 * `OpenSkyAPI` — получение данных о самолётах из OpenSky Network.
 
