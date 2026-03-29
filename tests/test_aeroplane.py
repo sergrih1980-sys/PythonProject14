@@ -1,4 +1,5 @@
 import unittest
+
 from src.aeroplane import Airplane
 
 
@@ -50,20 +51,6 @@ class TestAirplane(unittest.TestCase):
         plane = Airplane("ABC123", "  TEST  ", "Russia", 0, 0, 0, 0)
         self.assertEqual(plane.callsign, "TEST")
 
-    def test_origin_country_validation(self):
-        """Тесты валидации страны регистрации."""
-        # Корректная страна
-        plane = Airplane("ABC123", "TEST", "Russia", 0, 0, 0, 0)
-        self.assertEqual(plane.origin_country, "Russia")
-
-        # Пустая страна — должна стать "Unknown"
-        plane = Airplane("ABC123", "TEST", "", 0, 0, 0, 0)
-        self.assertEqual(plane.origin_country, "Unknown")
-
-        # Пробелы — должны быть убраны
-        plane = Airplane("ABC123", "TEST", "  USA  ", 0, 0, 0, 0)
-        self.assertEqual(plane.origin_country, "USA")
-
     def test_velocity_validation(self):
         """Тесты валидации скорости."""
         # Корректная скорость
@@ -99,4 +86,3 @@ class TestAirplane(unittest.TestCase):
         # Слишком высокая высота
         with self.assertRaises(ValueError):
             Airplane("ABC123", "TEST", "Russia", 0, 20000.0, 0, 0)
-

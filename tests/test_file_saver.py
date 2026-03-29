@@ -1,15 +1,16 @@
-import unittest
-import os
 import json
-from unittest.mock import patch, mock_open
+import os
+import unittest
+
 from src.aeroplane import Airplane
 from src.file_saver import JSONFileConnector  # замените на актуальный путь
+
 
 class TestJSONFileConnector(unittest.TestCase):
     def setUp(self):
         """Подготовка перед каждым тестом."""
         self.connector = JSONFileConnector("test_airplanes.json")
-        # Создаём тестовый самолёт — теперь гарантированно доступен во всех тестах
+        # Создаём тестовый самолёт
         self.test_plane = Airplane(
             icao24="ABC123",
             callsign="TEST123",
@@ -58,8 +59,10 @@ class TestJSONFileConnector(unittest.TestCase):
 
     def test_get_airplanes_by_speed_range(self):
         """Тест фильтрации по диапазону скорости."""
-        plane1 = Airplane("ABC123", "FAST", "Russia", 250, 10000, 55, 37)  # 900 км/ч
-        plane2 = Airplane("DEF456", "SLOW", "Russia", 50, 8000, 40, -74)  # 180 км/ч
+        plane1 = Airplane("ABC123", "FAST",
+                          "Russia", 250, 10000, 55, 37)  # 900 км/ч
+        plane2 = Airplane("DEF456", "SLOW",
+                          "Russia", 50, 8000, 40, -74)  # 180 км/ч
         self.connector.add_airplane(plane1)
         self.connector.add_airplane(plane2)
 
@@ -70,8 +73,10 @@ class TestJSONFileConnector(unittest.TestCase):
 
     def test_get_airplanes_by_flight_status(self):
         """Тест фильтрации по статусу полёта."""
-        plane1 = Airplane("ABC123", "INFLIGHT", "Russia", 200, 200, 55, 37)   # в полёте
-        plane2 = Airplane("DEF456", "ONGROUND", "Russia", 0, 50, 40, -74)     # на земле
+        plane1 = Airplane("ABC123", "INFLIGHT",
+                          "Russia", 200, 200, 55, 37)   # в полёте
+        plane2 = Airplane("DEF456", "ONGROUND",
+                          "Russia", 0, 50, 40, -74)     # на земле
         self.connector.add_airplane(plane1)
         self.connector.add_airplane(plane2)
 
@@ -107,7 +112,8 @@ class TestJSONFileConnector(unittest.TestCase):
     def test_update_airplane_invalid_field(self):
         """Тест обновления несуществующего поля."""
         self.connector.add_airplane(self.test_plane)
-        result = self.connector.update_airplane("ABC123", nonexistent_field="value")
+        result = self.connector.update_airplane("ABC123",
+                                                nonexistent_field="value")
         self.assertFalse(result)
 
     def test_save_all_success(self):
@@ -123,11 +129,11 @@ class TestJSONFileConnector(unittest.TestCase):
             self.assertEqual(data[0]['icao24'], "ABC123")
 
     def test_load_all_new_file(self):
-        """Тест загрузки из несуществующего файла (должен создать пустой список)."""
+        """Тест загрузки из несуществующего файла
+        (должен создать пустой список)."""
         # Удаляем файл, если он существует
         if os.path.exists("test_airplanes.json"):
             os.remove("test_airplanes.json")
         result = self.connector.load_all()
         self.assertTrue(result)
         self.assertEqual(len(self.connector._airplanes), 0)
-
