@@ -1,8 +1,6 @@
 import unittest
 from unittest.mock import patch, Mock
-from abc import ABC
-import requests
-from src.api_adapter import  BaseAPI, NominatimAPI, OpenSkyAPI
+from src.api_adapter import NominatimAPI, OpenSkyAPI
 
 
 class TestNominatimAPI(unittest.TestCase):
@@ -38,7 +36,6 @@ class TestNominatimAPI(unittest.TestCase):
         self.assertEqual(call_args['params']['format'], 'json')
         self.assertEqual(call_args['params']['limit'], 1)
 
-
     @patch('requests.get')
     def test_get_data_country_not_found(self, mock_get):
         """Тест когда страна не найдена в Nominatim."""
@@ -49,7 +46,8 @@ class TestNominatimAPI(unittest.TestCase):
 
         with self.assertRaises(ValueError) as context:
             self.nominatim.get_data('NonExistentCountry')
-        self.assertIn("Страна 'NonExistentCountry' не найдена", str(context.exception))
+        self.assertIn("Страна 'NonExistentCountry' "
+                      "не найдена", str(context.exception))
 
 
 class TestOpenSkyAPI(unittest.TestCase):
@@ -85,7 +83,6 @@ class TestOpenSkyAPI(unittest.TestCase):
         self.assertEqual(params['lomin'], 30.0)
         self.assertEqual(params['lomax'], 40.0)
 
-
     @patch('requests.get')
     def test_get_data_empty_states(self, mock_get):
         """Тест когда в ответе OpenSky нет данных о самолётах."""
@@ -96,4 +93,3 @@ class TestOpenSkyAPI(unittest.TestCase):
 
         result = self.opensky.get_data([0, 1, 0, 1])
         self.assertEqual(result, [])
-
