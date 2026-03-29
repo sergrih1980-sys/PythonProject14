@@ -1,6 +1,7 @@
 import unittest
 from src.aeroplane import Airplane
 
+
 class TestAirplane(unittest.TestCase):
     def test_valid_airplane_creation(self):
         """Тест создания самолёта с корректными данными."""
@@ -30,14 +31,3 @@ class TestAirplane(unittest.TestCase):
         # Пустая страна
         airplane = Airplane("ABC123", "TEST", "", 100, 5000, 0, 0)
         self.assertEqual(airplane.origin_country, "Unknown")
-
-    def test_origin_country_validation(self):
-        """Тест валидации страны регистрации."""
-        # Нормальная страна
-        airplane = Airplane("ABC123", "TEST", "Germany", 100, 5000, 0, 0)
-        self.assertEqual(airplane.origin_country, "Germany")
-
-        # Пустая страна
-        airplane = Airplane("ABC123", "TEST", "", 100, 5000, 0, 0)
-        self.assertEqual(airplane.origin_country, "Unknown")
-
