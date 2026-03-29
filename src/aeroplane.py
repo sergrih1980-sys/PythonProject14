@@ -1,8 +1,10 @@
 class Airplane:
     """Класс для представления информации о самолёте."""
-    __slots__ = ('icao24', 'callsign', 'origin_country', 'velocity', 'altitude', 'latitude', 'longitude')
+    __slots__ = ('icao24', 'callsign', 'origin_country', 'velocity', 'altitude',
+                 'latitude', 'longitude')
 
-    def __init__(self, icao24, callsign, origin_country, velocity, altitude, latitude, longitude):
+    def __init__(self, icao24, callsign, origin_country,
+                 velocity, altitude, latitude, longitude):
         self.icao24 = self._validate_icao24(icao24)
         self.callsign = self._validate_callsign(callsign)
         self.origin_country = self._validate_origin_country(origin_country)
@@ -20,7 +22,8 @@ class Airplane:
         try:
             int(icao24, 16)
         except ValueError:
-            raise ValueError("ICAO24 должен содержать только шестнадцатеричные символы (0–9, A–F)")
+            raise ValueError("ICAO24 должен содержать только"
+                             " шестнадцатеричные символы (0–9, A–F)")
         return icao24.upper()
 
     def _validate_callsign(self, callsign):
@@ -73,7 +76,8 @@ class Airplane:
         except (TypeError, ValueError):
             raise ValueError("Широта должна быть числом")
         if latitude < -90 or latitude > 90:
-            raise ValueError("Широта должна быть в диапазоне от −90 до 90 градусов")
+            raise ValueError("Широта должна быть в диапазоне"
+                             " от −90 до 90 градусов")
         return latitude
 
     def _validate_longitude(self, longitude):

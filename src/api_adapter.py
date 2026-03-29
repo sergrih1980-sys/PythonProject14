@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import requests
 
+
 class BaseAPI(ABC):
     """Абстрактный класс для работы с различными API."""
 
