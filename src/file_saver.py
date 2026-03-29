@@ -1,6 +1,7 @@
 import json
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
+
 from src.aeroplane import Airplane
 
 
@@ -87,7 +88,8 @@ class JSONFileConnector(BaseStorageConnector):
         index = self._find_airplane_index(icao24)
         if index is not None:
             removed_plane = self._airplanes.pop(index)
-            print(f"Удален самолёт: {removed_plane.callsign} (ICAO24: {icao24})")
+            print(f"Удален самолёт: {removed_plane.callsign}"
+                  f" (ICAO24: {icao24})")
             return True
         else:
             print(f"Самолёт с ICAO24 {icao24} не найден")
