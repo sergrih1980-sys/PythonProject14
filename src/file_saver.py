@@ -3,8 +3,10 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 from src.aeroplane import Airplane
 
+
 class BaseStorageConnector(ABC):
-    """Абстрактный класс, определяющий контракт для всех коннекторов к хранилищам данных."""
+    """Абстрактный класс, определяющий контракт
+     для всех коннекторов к хранилищам данных."""
 
     @abstractmethod
     def add_airplane(self, airplane: Airplane) -> bool:
@@ -13,18 +15,23 @@ class BaseStorageConnector(ABC):
     @abstractmethod
     def get_airplanes(self, **criteria) -> List[Airplane]:
         pass
+
     @abstractmethod
     def remove_airplane(self, icao24: str) -> bool:
         pass
+
     @abstractmethod
     def save_all(self) -> bool:
         pass
+
     @abstractmethod
     def load_all(self) -> bool:
         pass
+
     @abstractmethod
     def update_airplane(self, icao24: str, **updates) -> bool:
         pass
+
 
 class JSONFileConnector(BaseStorageConnector):
     """Конкретная реализация коннектора для работы с JSON‑файлами."""
@@ -110,7 +117,8 @@ class JSONFileConnector(BaseStorageConnector):
         """Сохраняет все данные в JSON‑файл."""
         try:
             with open(self.filename, 'w', encoding='utf-8') as f:
-                json.dump([ap.to_dict() for ap in self._airplanes], f, ensure_ascii=False, indent=2)
+                json.dump([ap.to_dict() for ap in self._airplanes],
+                          f, ensure_ascii=False, indent=2)
             print(f"Данные сохранены в {self.filename}")
             return True
         except Exception as e:

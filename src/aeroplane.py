@@ -1,6 +1,7 @@
 class Airplane:
     """Класс для представления информации о самолёте."""
-    __slots__ = ('icao24', 'callsign', 'origin_country', 'velocity', 'altitude',
+    __slots__ = ('icao24', 'callsign', 'origin_country',
+                 'velocity', 'altitude',
                  'latitude', 'longitude')
 
     def __init__(self, icao24, callsign, origin_country,
@@ -86,7 +87,8 @@ class Airplane:
         except (TypeError, ValueError):
             raise ValueError("Долгота должна быть числом")
         if longitude < -180 or longitude > 180:
-            raise ValueError("Долгота должна быть в диапазоне от −180 до 180 градусов")
+            raise ValueError("Долгота должна быть в диапазоне"
+                             " от −180 до 180 градусов")
         return longitude
 
     # Методы сравнения (по высоте полёта, при равной высоте — по скорости)
@@ -105,7 +107,6 @@ class Airplane:
 
     def __le__(self, other):
         return self < other or self == other
-
 
     def __gt__(self, other):
         return not (self <= other)
@@ -138,6 +139,8 @@ class Airplane:
 
     def __repr__(self):
         """Строковое представление объекта для отладки."""
-        return (f"Airplane(icao24='{self.icao24}', callsign='{self.callsign}', "
-                f"origin_country='{self.origin_country}', altitude={self.altitude} м, "
+        return (f"Airplane(icao24='{self.icao24}',"
+                f" callsign='{self.callsign}', "
+                f"origin_country='{self.origin_country}', "
+                f"altitude={self.altitude} м, "
                 f"velocity={self.get_speed_kmh():.1f} км/ч)")
