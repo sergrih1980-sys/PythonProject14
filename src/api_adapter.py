@@ -49,7 +49,7 @@ class OpenSkyAPI(BaseAPI):
     """Класс для работы с OpenSky Network API."""
 
     def __init__(self):
-        self.base_url = "https://opensky-network.org/api/states/all?"
+        self.base_url = "https://opensky-network.org/api/states/all"
 
     def get_data(self, boundingbox):
         params = {
