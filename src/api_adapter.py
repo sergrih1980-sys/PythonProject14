@@ -19,7 +19,7 @@ class NominatimAPI(BaseAPI):
     """Класс для работы с Nominatim OpenStreetMap API."""
 
     def __init__(self):
-        self.base_url = "https://nominatim.openstreetmap.org/search"
+        self.base_url =  "https://nominatim.openstreetmap.org/search"
 
     def get_data(self, country_name):
         params = {
@@ -49,7 +49,7 @@ class OpenSkyAPI(BaseAPI):
     """Класс для работы с OpenSky Network API."""
 
     def __init__(self):
-        self.base_url = "https://opensky-network.org/api/states/all"
+        self.base_url = "https://opensky-network.org/api/states/all?"
 
     def get_data(self, boundingbox):
         params = {
